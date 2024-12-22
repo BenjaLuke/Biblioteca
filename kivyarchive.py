@@ -247,7 +247,8 @@ class menuApp3(App):                                        # Clase que crea un 
         return layout                                       # Retornar el layout
     
     def update_spinner(self, text_input, spinner):          # Método que actualiza el menú desplegable
-        spinner.values = spinner.original_values            # Restaurar los valores originales
+        if not text_input.text:                             # Si el campo está vacío
+            return                                          # Retorno de la función
         filter_text = text_input.text.lower()               # Obtener el texto del campo
         filtered_values = [value for 
                            value in 

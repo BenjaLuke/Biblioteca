@@ -51,72 +51,76 @@ def conectar():                             # Función que conecta con la base d
         Mensaje.run()                       # Ejecuta el mensaje
         return None                         # Devuelve None
 
-def insertar_autor(conexion, nombre, apellidos):
-    # Primero comprueba si ese autor con nombre y apellidos ya existe
-    cursor = conexion.cursor()
-    query = "SELECT id_autor FROM autor WHERE nombre = %s AND apellidos = %s"
-    values = (nombre, apellidos)
-    cursor.execute(query, values)
-    autor = cursor.fetchone()
-    # Si el autor ya existe, no lo inserta
-    if autor:
+def insertar_autor(conexion,                # Función que inserta un autor en la base de datos
+                   nombre, apellidos):      # Función que inserta un autor en la base de datos
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
+    query = "SELECT id_autor FROM autor WHERE nombre = %s AND apellidos = %s"       # Crea una consulta SQL para seleccionar el id del autor
+    values = (nombre, apellidos)            # Crea una consulta SQL para seleccionar el id del autor
+    cursor.execute(query, values)           # Ejecuta la consulta
+    autor = cursor.fetchone()               # Guarda el resultado de la consulta
+    if autor:                               # Si hay un autor
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = "El autor ya existe en la base de datos",
-            boton = "Volver")
-        mensaje.run()
-        return
-    elif not nombre:
+            boton = "Volver")               # Muestra un mensaje
+        mensaje.run()                       # Ejecuta el mensaje
+        return                              # Devuelve None
+    elif not nombre:                        # Si no hay nombre
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = "El nombre del autor no puede estar vacío",
-            boton = "Volver")
-        mensaje.run()
-        return    
-    # Inserta el autor en la tabla autor
-    cursor = conexion.cursor()
+            boton = "Volver")               # Muestra un mensaje
+        mensaje.run()                       # Ejecuta el mensaje
+        return                              # Devuelve None
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
     query = "INSERT INTO autor (nombre, apellidos) VALUES (%s, %s)"
-    values = (nombre, apellidos)
-    cursor.execute(query, values)
-    conexion.commit()
+    values = (nombre, apellidos)            # Crea una consulta SQL para insertar el autor
+    cursor.execute(query, values)           # Ejecuta la consulta
+    conexion.commit()                       # Guarda los cambios en la base de datos
     mensaje = menuApp4(
         tamañoVentana = (600, 200),
         texto = "Autor insertado correctamente",
-        boton = "Volver")
-    mensaje.run()
+        boton = "Volver")                   # Muestra un mensaje
+    mensaje.run()                           # Ejecuta el mensaje
 
-def insertar_libro(conexion, idioma, año, tipologia, id_genero, estantería, título):
-    cursor = conexion.cursor()
+def insertar_libro(conexion, idioma,        # Función que inserta un libro en la base de datos
+                   año, tipologia,
+                   id_genero, estantería,
+                   título):                 # Función que inserta un libro en la base de datos
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
     query = "INSERT INTO libros (idioma, año, tipologia, id_genero, estantería, título) VALUES (%s, %s, %s, %s, %s, %s)"
-    values = (idioma, año, tipologia, id_genero, estantería, título)
-    cursor.execute(query, values)
-    conexion.commit()
-    print("Libro insertado correctamente")
+    values = (idioma, año, 
+              tipologia, id_genero,
+              estantería, título)           # Crea una consulta SQL para insertar el libro
+    cursor.execute(query, values)           # Ejecuta la consulta
+    conexion.commit()                       # Guarda los cambios en la base de datos
+    print("Libro insertado correctamente")  # Muestra un mensaje
 
-def insertar_genero(conexion, nombre_genero):   
-    cursor = conexion.cursor()
+def insertar_genero(conexion,               # Función que inserta un género en la base de datos
+                    nombre_genero):         # Función que inserta un género en la base de datos 
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
     query = "SELECT id_genero FROM genero WHERE nombre = %s"
-    cursor.execute(query, (nombre_genero,))
-    genero = cursor.fetchone()
-    if genero:
+    cursor.execute(query, (nombre_genero,)) # Crea una consulta SQL para seleccionar el id del género
+    genero = cursor.fetchone()              # Guarda el resultado de la consulta
+    if genero:                              # Si hay un género
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = "El género ya existe en la base de datos",
-            boton = "Volver")
-        mensaje.run()
-        return
-    elif not nombre_genero:
+            boton = "Volver")               # Muestra un mensaje
+        mensaje.run()                       # Ejecuta el mensaje
+        return                              # Devuelve None
+    elif not nombre_genero:                 # Si no hay nombre
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = "El nombre del género no puede estar vacío",
-            boton = "Volver")
-        mensaje.run()
-        return
-    # insertar el genero en la tabla genero
+            boton = "Volver")               # Muestra un mensaje
+        mensaje.run()                       # Ejecuta el mensaje
+        return                              # Devuelve None
     query = "INSERT INTO genero (nombre) VALUES (%s)"
-    ejecutar_Un_query(conexion,query, (nombre_genero,),
-                      "Género insertado correctamente",
-                      "Error al insertar el género")
+    ejecutar_Un_query(conexion,
+            query, (nombre_genero,),
+            "Género insertado correctamente",
+            "Error al insertar el género")  # Muestra un mensaje
     
 def insertar_editorial(conexion, nombre_editorial):
     cursor = conexion.cursor()
