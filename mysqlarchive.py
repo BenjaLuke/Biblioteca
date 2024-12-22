@@ -1,52 +1,56 @@
-import mysql.connector
-from kivyarchive import menuApp1, menuApp2, menuApp3, menuApp4, menuApp5
+import mysql.connector                      # Importa el módulo mysql.connector
+from kivyarchive import (menuApp1, 
+                         menuApp2, 
+                         menuApp3, 
+                         menuApp4, 
+                         menuApp5)          # Importa las funciones de la librería kivyarchive
 
-def Crea_lista(conexion, tabla, campo,lambdeo = 0, appendeo = 0):
-    cursor = conexion.cursor()
-    query = f"SELECT {campo} FROM {tabla}"
-    cursor.execute(query)
-    lista = cursor.fetchall()
-    if lambdeo == 0:
-        lista.sort(key=lambda x: x[2])
-    elif lambdeo == 1:
-        lista.sort(key=lambda x: x[1])
-    Lista = []
-    for i in lista:
-        if appendeo == 0:
+def Crea_lista(conexion, tabla,             # Función que crea una lista de los campos de una tabla
+               campo,lambdeo = 0, 
+               appendeo = 0):               # Función que crea una lista de los campos de una tabla
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
+    query = f"SELECT {campo} FROM {tabla}"  # Crea una consulta SQL para seleccionar los campos de la tabla
+    cursor.execute(query)                   # Ejecuta la consulta
+    lista = cursor.fetchall()               # Guarda los resultados de la consulta en una lista
+    if lambdeo == 0:                        # Si lambdeo es 0
+        lista.sort(key=lambda x: x[2])      # Ordena la lista por el tercer elemento
+    elif lambdeo == 1:                      # Si lambdeo es 1
+        lista.sort(key=lambda x: x[1])      # Ordena la lista por el segundo elemento
+    Lista = []                              # Crea una lista vacía
+    for i in lista:                         # Para cada elemento en la lista
+        if appendeo == 0:                   # Si appendeo es 0
             Lista.append(f"{i[0]} - {i[2]}, {i[1]}")
-        elif appendeo == 1:
-            Lista.append(f"{i[0]} - {i[1]}")
-        elif appendeo == 2:
-            Lista.append(i[0])
-    if lambdeo == 2:
-        Lista.sort()
-    return Lista
+        elif appendeo == 1:                 # Si appendeo es 1
+            Lista.append(f"{i[0]} - {i[1]}")# Añade a la lista el primer y segundo elemento
+        elif appendeo == 2:                 # Si appendeo es 2
+            Lista.append(i[0])              # Añade a la lista el primer elemento
+    if lambdeo == 2:                        # Si lambdeo es 2
+        Lista.sort()                        # Ordena la lista
+    return Lista                            # Devuelve la lista
     
-# Conectar a la base de datos
-def conectar():
-    try:
+def conectar():                             # Función que conecta con la base de datos
+    try:                                    # Intenta
         conexion = mysql.connector.connect(
-            host="192.168.1.150",  # O la IP del servidor si es remoto
-            user="casa",  # Reemplázalo con tu nombre de usuario
-            password="chumino",  # Reemplázalo con tu contraseña
-            database="Biblioteca"
+            host="192.168.1.150",           # O la IP del servidor si es remoto
+            user="casa",                    # Nombre de usuario
+            password="chumino",             # Contraseña
+            database="Biblioteca"           # Nombre de la base de datos
         )
-        if conexion.is_connected():
+        if conexion.is_connected():         # Si la conexión está establecida
             Mensaje = menuApp4(
                 tamañoVentana = (600, 200),
                 texto = "Conexión establecida",
-                boton = "Continuar")
-            Mensaje.run()
-            return conexion
-    except mysql.connector.Error as err:
+                boton = "Continuar")        # Muestra un mensaje
+            Mensaje.run()                   # Ejecuta el mensaje
+            return conexion                 # Devuelve la conexión
+    except mysql.connector.Error as err:    # Si hay un error
         Mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = f"Error de conexión: {err}",
-            boton = "Volver")
-        Mensaje.run()
-        return None
+            boton = "Volver")               # Muestra un mensaje
+        Mensaje.run()                       # Ejecuta el mensaje
+        return None                         # Devuelve None
 
-# Crear un nuevo autor
 def insertar_autor(conexion, nombre, apellidos):
     # Primero comprueba si ese autor con nombre y apellidos ya existe
     cursor = conexion.cursor()
@@ -81,7 +85,6 @@ def insertar_autor(conexion, nombre, apellidos):
         boton = "Volver")
     mensaje.run()
 
-# Crear un nuevo libro
 def insertar_libro(conexion, idioma, año, tipologia, id_genero, estantería, título):
     cursor = conexion.cursor()
     query = "INSERT INTO libros (idioma, año, tipologia, id_genero, estantería, título) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -90,7 +93,6 @@ def insertar_libro(conexion, idioma, año, tipologia, id_genero, estantería, t�
     conexion.commit()
     print("Libro insertado correctamente")
 
-# Añadir un género
 def insertar_genero(conexion, nombre_genero):   
     cursor = conexion.cursor()
     query = "SELECT id_genero FROM genero WHERE nombre = %s"
@@ -141,7 +143,7 @@ def insertar_editorial(conexion, nombre_editorial):
     ejecutar_Un_query(conexion,query, (nombre_editorial,),
                         "Editorial insertada correctamente",
                         "Error al insertar la editorial")    
-# Obtener todos los libros con sus autores
+
 def obtener_libros_y_autores(conexion):
     cursor = conexion.cursor()
     Lista_Autores = Crea_lista(conexion, "autor", "id_autor, nombre, apellidos")         
@@ -276,7 +278,6 @@ def obtener_libros_y_autores(conexion):
             boton = "Volver")
         mensaje.run()
 
-# Ver todos los autores
 def ver_autores(conexion):
     cursor = conexion.cursor()
     Preguntas = menuApp3(
@@ -330,7 +331,6 @@ def ver_autores(conexion):
     )
     Lista.run()
 
-# Ver todos los géneros
 def ver_generos(conexion):
     cursor = conexion.cursor()
     query = "SELECT id_genero, nombre FROM genero"
@@ -359,7 +359,6 @@ def ver_editoriales(conexion):
     )
     Lista.run()    
 
-# Actualizar datos de un autor
 def actualizar_autor(conexion, autor):
     cursor = conexion.cursor()
     # id_autor es el número del principio de la cadena autor hasta el primer espacio
@@ -411,7 +410,7 @@ def actualizar_autor(conexion, autor):
         ejecutar_Un_query(conexion,query, values,
                             f"Apellidos actualizados correctamente",
                             f"Error al actualizar los apellidos")            
-# Actualizar el nombre de un género
+
 def actualizar_genero(conexion, genero):
     cursor = conexion.cursor()
     id_genero = int(genero.split(" ")[0])
@@ -432,7 +431,6 @@ def actualizar_genero(conexion, genero):
                         f"Género actualizado correctamente",
                         f"Error al actualizar el género")
         
-# Actualizar el nombre de una editorial
 def actualizar_editorial(conexion, editorial):
     cursor = conexion.cursor()
     id_editorial = int(editorial.split(" ")[0])
@@ -453,7 +451,6 @@ def actualizar_editorial(conexion, editorial):
                         f"Editorial actualizada correctamente",
                         f"Error al actualizar la editorial")
 
-# Eliminar un libro por ID
 def eliminar_libro(conexion, id_libro,nombre):
     estasSeguro = menuApp1(
         title = f"Eliminar {nombre}",
@@ -481,7 +478,6 @@ def eliminar_libro(conexion, id_libro,nombre):
                       "Libro eliminado correctamente",
                         "Error al eliminar el libro")
     
-# Eliminar un autor por ID
 def eliminar_autor(conexion, id_autor,nombre):
     estasSeguro = menuApp1(
         title = f"Eliminar {nombre}",
@@ -506,7 +502,7 @@ def eliminar_autor(conexion, id_autor,nombre):
     ejecutar_Un_query(conexion,query, (id_autor,),
                       "Autor eliminado correctamente",
                         "Error al eliminar el autor")
-# Eliminar un género por ID
+
 def eliminar_genero(conexion, id_genero,nombre):
     EstasSeguro = menuApp1(
         title = f"Eliminar {nombre}",
