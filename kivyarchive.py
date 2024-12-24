@@ -248,6 +248,9 @@ class menuApp3(App):                                        # Clase que crea un 
     
     def update_spinner(self, text_input, spinner):          # Método que actualiza el menú desplegable
         if not text_input.text:                             # Si el campo está vacío
+            spinner.values = spinner.original_values        # Restaurar los valores originales
+            spinner.text = "Despliega y escoge"             # Restaurar el texto del menú
+            spinner.background_color = (1, 0.6, 0.6, 1)     # Restaurar el color de fondo
             return                                          # Retorno de la función
         filter_text = text_input.text.lower()               # Obtener el texto del campo
         filtered_values = [value for 
@@ -258,6 +261,11 @@ class menuApp3(App):                                        # Clase que crea un 
         if filtered_values:                                 # Si hay valores filtrados
             spinner.values = filtered_values                # Actualizar los valores del menú
             spinner.text = filtered_values[0]               # Establecer el primer valor
+            spinner.background_color = (1, 0.6, 0.6, 1)     # Establecer el color de fondo
+        else:                                               # Si no hay valores filtrados
+            spinner.values = [text_input.text]              # Deja un sólo valor
+            spinner.text = text_input.text                  # Establecer el valor del campo
+            spinner.background_color = (0, 0, 1, 1)         # Establecer el color de fondo
     def focus_next(self, current_input, next_input):        # Método que establece el foco en el siguiente campo
         next_input.focus = True                             # Establecer el foco en el siguiente campo
     def on_button_press(self, instance):                    # Método que se ejecuta al presionar un botón
@@ -328,11 +336,20 @@ class menuApp5(App):                                        # Clase que crea una
         layout = BoxLayout(orientation='vertical', 
                            padding=20, 
                            spacing=10)                      # Layout principal
+        self.cabecera = Label(
+            text=str(self.título),
+            size_hint=(1, None),
+            height=60,
+            font_size=30,
+            color=(0.7, 0.48, 0.66, 1),
+            bold=True)                                      # Crear un título para la lista
+        layout.add_widget(self.cabecera)                    # Agregar el título al layout
         self.search_input = TextInput(
             hint_text="Busca una opción...",
             size_hint=(1, None),
             height=40,
             multiline=False,
+            background_color=(1, 1, 1, 1),
         )                                                   # Crear un campo de texto editable
         self.search_input.bind(text=self.on_search_text)    # Vincular el evento de cambio de texto
         layout.add_widget(self.search_input)                # Agregar el campo al layout
@@ -384,11 +401,18 @@ class menuApp5(App):                                        # Clase que crea una
         return layout                                       # Retornar el layout
     
     def on_search_text(self, instance, value):              # Método que se ejecuta al cambiar el texto del campo
+        validacion = False
         for opcion, widget in self.checkboxes:              # Recorrer las casillas de verificación
             if value.lower() in opcion.lower():             # Si el texto coincide con la opción
                 self.scroll_layout.parent.scroll_to(widget) # Desplazar la lista hasta la opción
+                # la textinput se pone de color original
+                self.search_input.background_color = (1, 1, 1, 1)
+                validacion = True
                 break                                       # Salir del bucle
-            
+        if not validacion:                                  # Si no se encuentra la opción
+            # la textinput se pone de color rojo
+            self.search_input.background_color = (1, 0, 0, 1)
+                
     def on_checkbox_active(self, checkbox, value):          # Método que se ejecuta al cambiar el estado de la casilla
         for opcion, cb in self.checkboxes:                  # Recorrer las casillas de verificación
             if cb == checkbox:                              # Si la casilla coincide

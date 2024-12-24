@@ -122,39 +122,53 @@ def insertar_genero(conexion,               # Función que inserta un género en
             "Género insertado correctamente",
             "Error al insertar el género")  # Muestra un mensaje
     
-def insertar_editorial(conexion, nombre_editorial):
-    cursor = conexion.cursor()
-    query = "SELECT id_editorial FROM editorial WHERE nombre = %s"
-    values = (nombre_editorial,)
-    cursor.execute(query, values)
-    editorial = cursor.fetchone()
-    if editorial:
+def insertar_editorial(conexion,            # Función que inserta una editorial en la base de datos
+                       nombre_editorial):   # Función que inserta una editorial en la base de datos
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
+    query = "SELECT id_editorial FROM editorial WHERE nombre = %s"  # Crea una consulta SQL para seleccionar el id de la editorial
+    values = (nombre_editorial,)            # Crea una consulta SQL para seleccionar el id de la editorial
+    cursor.execute(query, values)           # Ejecuta la consulta
+    editorial = cursor.fetchone()           # Guarda el resultado de la consulta
+    if editorial:                           # Si hay una editorial
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
-            texto = "La editorial ya existe en la base de datos",
-            boton = "Volver")
-        mensaje.run()
-        return
-    elif not nombre_editorial:
+            texto = "La editorial ya existe en la base de datos",   
+            boton = "Volver")               # Muestra un mensaje
+        mensaje.run()                       # Ejecuta el mensaje
+        return                              # Devuelve None
+    elif not nombre_editorial:              # Si no hay nombre
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = "El nombre de la editorial no puede estar vacío",
-            boton = "Volver")
-        mensaje.run()
-        return
+            boton = "Volver")               # Muestra un mensaje
+        mensaje.run()                       # Ejecuta el mensaje
+        return                              # Devuelve None
        
-    query = "INSERT INTO editorial (nombre) VALUES (%s)"
-    ejecutar_Un_query(conexion,query, (nombre_editorial,),
-                        "Editorial insertada correctamente",
-                        "Error al insertar la editorial")    
+    query = "INSERT INTO editorial (nombre) VALUES (%s)"        # Crea una consulta SQL para insertar la editorial
+    ejecutar_Un_query(
+        conexion,query, (nombre_editorial,),
+        "Editorial insertada correctamente",
+        "Error al insertar la editorial")   # Muestra un mensaje
 
-def obtener_libros_y_autores(conexion):
-    cursor = conexion.cursor()
-    Lista_Autores = Crea_lista(conexion, "autor", "id_autor, nombre, apellidos")         
-    Lista_tipología = ["Ficción", "No ficción"]
-    Lista_Idiomas = ["Castellano", "Catalán", "Inglés", "Francés", "Japonés", "Alemán", "Italiano", "Portugués", "Otros"]
-    Lista_Generos = Crea_lista(conexion, "genero", "id_genero, nombre",1 , 1)
-    Lista_Editoriales = Crea_lista(conexion, "editorial", "nombre",2, 2)
+def obtener_libros_y_autores(conexion):     # Función que obtiene los libros y autores de la base de datos
+    cursor = conexion.cursor()              # Crea un cursor para la conexión
+    Lista_Autores = Crea_lista(conexion, 
+            "autor",
+            "id_autor, nombre, apellidos")  # Crea una lista de autores         
+    Lista_tipología = [
+        "Ficción", "No ficción"]            # Crea una lista de tipologías
+    Lista_Idiomas = [
+        "Castellano", "Catalán",
+        "Inglés", "Francés",
+        "Japonés", "Alemán",
+        "Italiano", "Portugués",
+        "Estremeñu", "Otros"]               # Crea una lista de idiomas
+    Lista_Generos = Crea_lista(
+        conexion, "genero",
+        "id_genero, nombre",1 , 1)          # Crea una lista de géneros
+    Lista_Editoriales = Crea_lista(
+        conexion, "editorial",
+        "nombre",2, 2)                      # Crea una lista de editoriales
     Preguntas = menuApp3(
         title = "Buscando libros",
         tamañoVentana = (500, 1080),
@@ -170,63 +184,58 @@ def obtener_libros_y_autores(conexion):
         ],
         texto = "Deja en blanco para no aplicar un filtro",
         textoBoton="Buscar",
-        tipo = [[0],[0],[0],[1,Lista_Idiomas],[1,Lista_tipología],[1,Lista_Editoriales],[1,Lista_Generos],[1,Lista_Autores]]
+        tipo = [[0],[0],[0],
+                [1,Lista_Idiomas],
+                [1,Lista_tipología],
+                [1,Lista_Editoriales],
+                [1,Lista_Generos],
+                [1,Lista_Autores]]          # Crea una lista de autores
     )
-    Preguntas.run()
-    # Construcción dinámica de la consulta SQL
-    
-    # Solicitar filtros al usuario
-    titulo = Preguntas.valores["valor_1"].text
-    estanteria = Preguntas.valores["valor_2"].text
-    año = Preguntas.valores["valor_3"].text
-    idioma = Preguntas.valores["valor_4"].text
-    tipologia = Preguntas.valores["valor_5"].text
-    editorial = Preguntas.valores["valor_6"].text
-    id_genero = Preguntas.valores["valor_7"].text
-    id_autor = Preguntas.valores["valor_8"].text
-    # Buscamos el id_editorial en la tabla editorial que tenga el nombre editorial
-    query = "SELECT id_editorial FROM editorial WHERE nombre = %s"
-    cursor.execute(query, (editorial,))
-    id_editorial = cursor.fetchone()
-    if id_editorial:
-        id_editorial = id_editorial[0]  
-    else:
-        id_editorial = "Despliega y escoge"        
-    # Construcción dinámica de la consulta SQL
-    filtros = []
-    valores = []
-    
-    if titulo:
-        filtros.append("libros.Título LIKE %s")
-        valores.append(f"%{titulo}%")
-    if estanteria:
-        filtros.append("libros.Estantería = %s")
-        valores.append(estanteria)
-    if idioma and idioma != "Despliega y escoge":
-        filtros.append("libros.idioma = %s")
-        valores.append(idioma)
-    if año:
-        filtros.append("libros.año = %s")
-        valores.append(año)
-    if tipologia  and tipologia != "Despliega y escoge":
-        filtros.append("libros.tipologia = %s")
-        valores.append(tipologia)
-    if id_editorial and id_editorial != "Despliega y escoge":
-        filtros.append("libros.id_editorial = %s")
-        valores.append(id_editorial)
-    if id_genero  and id_genero != "Despliega y escoge":
-        filtros.append("libros_géneros.id_genero = %s")
-        valores.append(id_genero)
-    if id_autor  and id_autor != "Despliega y escoge":
-        filtros.append("libros_autores.id_autor = %s")
-        valores.append(id_autor)
-
-    # Construcción de la cláusula WHERE
-    where_clause = " AND ".join(filtros)
-    if where_clause:
-        where_clause = "WHERE " + where_clause
-
-    # Consulta con filtros
+    Preguntas.run()                         # Ejecuta las preguntas
+    titulo = Preguntas.valores["valor_1"].text      # Guarda el valor de la pregunta 1
+    estanteria = Preguntas.valores["valor_2"].text  # Guarda el valor de la pregunta 2
+    año = Preguntas.valores["valor_3"].text         # Guarda el valor de la pregunta 3
+    idioma = Preguntas.valores["valor_4"].text      # Guarda el valor de la pregunta 4
+    tipologia = Preguntas.valores["valor_5"].text   # Guarda el valor de la pregunta 5
+    editorial = Preguntas.valores["valor_6"].text   # Guarda el valor de la pregunta 6
+    id_genero = Preguntas.valores["valor_7"].text   # Guarda el valor de la pregunta 7
+    id_autor = Preguntas.valores["valor_8"].text    # Guarda el valor de la pregunta 8
+    query = "SELECT id_editorial FROM editorial WHERE nombre = %s"  # Crea una consulta SQL para seleccionar el id de la editorial
+    cursor.execute(query, (editorial,))     # Ejecuta la consulta
+    id_editorial = cursor.fetchone()        # Guarda el resultado de la consulta
+    if id_editorial:                        # Si hay una editorial
+        id_editorial = id_editorial[0]      # Guarda el resultado de la consulta
+    else:                                   # Si no hay una editorial
+        id_editorial = "Despliega y escoge" # Guarda el resultado de la consulta        
+    filtros = []                            # Crea una lista de filtros
+    valores = []                            # Crea una lista de valores
+    if titulo:                              # Si hay un título
+        filtros.append("libros.Título LIKE %s")     # Añade un filtro
+        valores.append(f"%{titulo}%")               # Añade un valor
+    if estanteria:                                  # Si hay una estantería
+        filtros.append("libros.Estantería = %s")    # Añade un filtro
+        valores.append(estanteria)                  # Añade un valor
+    if idioma and idioma != "Despliega y escoge":   # Si hay un idioma
+        filtros.append("libros.idioma = %s")        # Añade un filtro
+        valores.append(idioma)                      # Añade un valor
+    if año:                                         # Si hay un año
+        filtros.append("libros.año = %s")           # Añade un filtro
+        valores.append(año)                         # Añade un valor
+    if tipologia  and tipologia != "Despliega y escoge":        # Si hay una tipología
+        filtros.append("libros.tipologia = %s")                 # Añade un filtro
+        valores.append(tipologia)                               # Añade un valor
+    if id_editorial and id_editorial != "Despliega y escoge":   # Si hay una editorial
+        filtros.append("libros.id_editorial = %s")              # Añade un filtro
+        valores.append(id_editorial)                            # Añade un valor
+    if id_genero  and id_genero != "Despliega y escoge":        # Si hay un género
+        filtros.append("libros_géneros.id_genero = %s")         # Añade un filtro
+        valores.append(id_genero)                               # Añade un valor
+    if id_autor  and id_autor != "Despliega y escoge":          # Si hay un autor
+        filtros.append("libros_autores.id_autor = %s")          # Añade un filtro
+        valores.append(id_autor)                                # Añade un valor
+    where_clause = " AND ".join(filtros)                        # Crea una cláusula WHERE
+    if where_clause:                                            # Si hay una cláusula WHERE
+        where_clause = "WHERE " + where_clause                  # Añade una cláusula WHERE
     query = f"""
     SELECT libros.id_libro, libros.Título, libros.Estantería, libros.idioma, libros.año, libros.tipologia,
            (SELECT nombre FROM editorial WHERE editorial.id_editorial = libros.id_editorial) AS editorial,
@@ -239,48 +248,44 @@ def obtener_libros_y_autores(conexion):
     JOIN genero ON libros_géneros.id_genero = genero.id_genero
     {where_clause}
     GROUP BY libros.id_libro;
-    """
-    # Ejecutar la consulta
-    cursor.execute(query, valores)
-    resultados = cursor.fetchall()
-
-    # Mostrar resultados
-    if resultados:
-        if len(resultados) > 1:
-            # Quitamos de la lista de resultados todos los datos de cada lista menos los dos primeros
-            for i in range(len(resultados)):
-                resultados[i] = resultados[i][0:2]
-            
-            resultados.sort(key=lambda x: x[1])    
+    """                                                         # Crea una consulta SQL para seleccionar los libros
+    cursor.execute(query, valores)                              # Ejecuta la consulta
+    resultados = cursor.fetchall()                              # Guarda los resultados de la consulta
+    if resultados:                                              # Si hay resultados
+        if len(resultados) > 1:                                 # Si hay más de un resultado
+            for i in range(len(resultados)):                    # Para cada resultado
+                resultados[i] = resultados[i][0:2]              # Guarda los resultados
+            resultados.sort(key=lambda x: x[1])                 # Ordena los resultados
             Listado = menuApp2(
                 title = "Listado de libros",
                 tamañoVentana = (800, 900),
                 lista=resultados,
-            )
-            Listado.run()
-        else:
-            # convierte resultados en una lista única con la primera lista dentro de él
+            )                                                   # Crea un listado de libros
+            Listado.run()                                       # Ejecuta el listado
+        else:                                                   # Si no hay resultados
             resultados1 = resultados[0]
-            valores = ["id", "Título", "Estantería", "Idioma", "Año", "Tipologia", "Editorial", "Géneros", "Autores"]
-            # Convierte resultados en una lista de listas con 2 valores en cada una el correspondiente a valores y el correspondiente a resultados
-            a=0
-            resultados = []
-            for i in valores:
-                resultados.append([i, resultados1[a]])
-                a += 1          
+            valores = ["id", "Título", 
+                       "Estantería", "Idioma", 
+                       "Año", "Tipologia", 
+                       "Editorial", "Géneros", 
+                       "Autores"]                               # Crea una lista de valores
+            a=0                                                 # Inicializa a en 0
+            resultados = []                                     # Crea una lista de resultados
+            for i in valores:                                   # Para cada valor
+                resultados.append([i, resultados1[a]])          # Añade un resultado
+                a += 1                                          # Incrementa a en 1
             Listado = menuApp2(
                 title = "Único libro encontrado",
                 tamañoVentana = (800, 400),
                 lista=resultados,
-            )
-            Listado.run()
-                    
-    else:
+            )                                                   # Crea un listado de libros
+            Listado.run()                                       # Ejecuta el listado
+    else:                                                       # Si no hay resultados
         mensaje = menuApp4(
             tamañoVentana = (600, 200),
             texto = "No se encontraron resultados",
-            boton = "Volver")
-        mensaje.run()
+            boton = "Volver")                                   # Muestra un mensaje
+        mensaje.run()                                           # Ejecuta el mensaje
 
 def ver_autores(conexion):
     cursor = conexion.cursor()
@@ -629,7 +634,7 @@ def main():
                     Lista_Generos = Crea_lista(conexion, "genero", "id_genero, nombre",1 , 1)
                     Lista_Editoriales = Crea_lista(conexion, "editorial", "nombre",2, 2)
                     Lista_tipología = ["Ficción", "No ficción"]
-                    Lista_Idiomas = ["Castellano", "Catalán", "Inglés", "Francés", "Japonés", "Alemán", "Italiano", "Portugués", "Otros"]
+                    Lista_Idiomas = ["Castellano", "Catalán", "Inglés", "Francés", "Japonés", "Alemán", "Italiano", "Portugués", "Estremeñu", "Otros"]
                     Datos = menuApp3(
                         title = "Introduce libro",
                         tamañoVentana = (500, 880),
@@ -654,13 +659,33 @@ def main():
                     tipologia = Datos.valores["valor_5"].text
                     Editorial = Datos.valores["valor_6"].text
                     # Para Editorial, tenemos que encontrar el id_editorial en la tabla editorial que tenga el nombre Datos.valores["valor_6"].text
-                    query = "SELECT id_editorial FROM editorial WHERE nombre = %s"
-                    cursor.execute(query, (Editorial,))
-                    editorial = cursor.fetchone()
-                    if editorial:
-                        Editorial = editorial[0]
-                    else:
-                        Editorial = None
+                    AseguraEditorial = True
+                    while AseguraEditorial:
+                        if Editorial == "Despliega y escoge":
+                            AseguraEditorial = False
+                            Editorial = None
+                            break
+                        else:
+                            query = "SELECT id_editorial FROM editorial WHERE nombre = %s"
+                            cursor.execute(query, (Editorial,))
+                            editorial = cursor.fetchone()
+                            if editorial:
+                                Editorial = editorial[0]
+                                print(Editorial)
+                                AseguraEditorial = False
+                            else:
+                                insertar_editorial(conexion, Editorial)
+                    # Consulta que el libro no exista ya
+                    query = "SELECT id_libro FROM libros WHERE título = %s"
+                    cursor.execute(query, (título,))
+                    libro = cursor.fetchone()
+                    if libro:
+                        mensaje = menuApp4(
+                            tamañoVentana = (600, 200),
+                            texto = "Ya existe ese título en la base de datos",
+                            boton = "Volver")
+                        mensaje.run()
+                        continue
                     # Insertar el libro en la tabla libros
                     cursor = conexion.cursor()
                     query_libro = "INSERT INTO libros ( idioma, año, tipologia, estantería, título, id_editorial) VALUES (%s, %s, %s, %s, %s, %s)"
@@ -791,7 +816,7 @@ def main():
                         ventana.run()
                         if ventana.valor == "Actualiza datos":
                             # Actualizar detalles del libro
-                            Lista_Idiomas = ["Castellano", "Catalán", "Inglés", "Francés", "Japonés", "Alemán", "Italiano", "Portugués", "Otros"]
+                            Lista_Idiomas = ["Castellano", "Catalán", "Inglés", "Francés", "Japonés", "Alemán", "Italiano", "Portugués", "Estremeñu", "Otros"]
                             Lista_tipología = ["Ficción", "No ficción"]
                             Lista_Editoriales = Crea_lista(conexion, "editorial", "nombre",2, 2)                          
                             Datos = menuApp3(
