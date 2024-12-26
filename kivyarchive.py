@@ -9,6 +9,7 @@ from kivy.uix.textinput import TextInput                    # Importar la clase 
 from kivy.uix.spinner import Spinner                        # Importar la clase que permite crear menús desplegables
 from kivy.uix.checkbox import CheckBox                      # Importar la clase que permite crear casillas de verificación
 from kivy.clock import Clock                                # Importar la clase que permite programar eventos diferidos
+import platform                                             # Importar la librería que permite acceder a las propiedades del sistema
 
 class menuApp1(App):                                        # Clase que crea un menú con botones
 
@@ -61,73 +62,85 @@ class menuApp1(App):                                        # Clase que crea un 
 
 class menuApp2(App):                                        # Clase que crea una lista
 
-    def __init__(self, title,tamañoVentana,
-                 lista,arquetipos = "-",**kwargs):          # Constructor de la clase
+    def __init__(self, title, tamañoVentana, lista, arquetipos="-", **kwargs):  # Constructor de la clase
         super(menuApp2, self).__init__(**kwargs)            # Inicialización de la clase padre
         self.title_menu = title                             # Título del menú
         self.tamañoVentana = tamañoVentana                  # Tamaño de la ventana
         self.lista = lista                                  # Lista de elementos
-        self.Width = self.tamañoVentana[0]-50               # Ancho de la ventana
+        self.Width = self.tamañoVentana[0] - 50             # Ancho de la ventana
         self.arquetipos = arquetipos                        # Arquetipos de la lista
-        
+
+        # Ajustes para macOS
+        if platform.system() == "Darwin":
+            Window.size = (1024, 768)                       # Tamaño más grande para macOS
+            self.Width = self.tamañoVentana[0] - 100        # Ajusta el ancho en macOS
+        else:
+            Window.size = self.tamañoVentana                # Tamaño inicial de la ventana
+
     def build(self):                                        # Método que crea la ventana
-        Window.size = self.tamañoVentana                    # Tamaño de la ventana
         Window.title = 'Biblioteca'                         # Nombre de la ventana
         Window.clearcolor = (0.2, 0.4, 0.6, 1)              # Color de fondo de la ventana
         Window.top = 1                                      # Justifica la ventana en la parte superior
+
         layout = BoxLayout(orientation='vertical',          
-                           padding = 20, 
-                           spacing = 10)                    # Layout principal
-        titulo = Label(text=self.title_menu,
-                       size_hint=(1, None),
-                       height=60,
-                       font_size = 30,
-                       color=(0.7, 0.48, 0.66, 1),
-                       bold=True)                           # Crear un título para el menú
+                           padding=20, 
+                           spacing=10)                     # Layout principal
+
+        titulo = Label(
+            text=self.title_menu,
+            size_hint=(1, 0.1),                             # Usar tamaño relativo
+            font_size='25sp',                               # Tamaño de fuente relativo a la pantalla
+            color=(0.7, 0.48, 0.66, 1),
+            bold=True
+        )
         layout.add_widget(titulo)                           # Agregar el título al layout
-        scroll_layout = ScrollView(size_hint=(1, 1))        # Crear un ScrollView para la lista
+
+        scroll_layout = ScrollView(size_hint=(1, 0.8))      # Crear un ScrollView para la lista
         grid = GridLayout(cols=1, size_hint_y=None,
                           spacing=0, 
-                          padding=10)                       # Crear un GridLayout para la lista
+                          padding=10)                      # Crear un GridLayout para la lista
         grid.bind(minimum_height=grid.setter('height'))     # Vincular la altura mínima del GridLayout
+
         for sublista in self.lista:                         # Crear una etiqueta para cada elemento de la lista
             fila = f"{sublista[0]} - {sublista[1]}"         # Aquí se combina el id con el Nombre
             if len(sublista) > 2:                           # Si hay más elementos en la sublista
                 fila += (f" {self.arquetipos} " +
                          f" {self.arquetipos} ".join(
-                             map(str, sublista[2:])))       # Agregar otros elementos de la sublista
+                             map(str, sublista[2:])))      # Agregar otros elementos de la sublista
             etiqueta = Label(
                 text=f"[b]{fila}[/b]",
                 markup=True,
                 size_hint=(1, None),
-                height=20,
-                text_size=(None, None),
-                halign = "left",
+                height=30,                                  # Aumentar la altura de la etiqueta
+                text_size=(self.Width, None),               # Ajustar el ancho del texto al ancho de la ventana
+                halign="left",
                 valign="middle",
-            )                                               # Crear una etiqueta con el texto
-            etiqueta.text_size = (self.Width, None)         # Ajustar el ancho del texto al ancho de la ventana
+            )
+            etiqueta.bind(texture_size=lambda instance, value: setattr(instance, 'height', value[1]))
             grid.add_widget(etiqueta)                       # Agregar la etiqueta al GridLayout
+
         scroll_layout.add_widget(grid)                      # Agregar el GridLayout al ScrollView
         layout.add_widget(scroll_layout)                    # Agregar el ScrollView al layout
+
         cantidad = Label(
             text=f"Total de registros: {len(self.lista)}",
-            size_hint=(1, None),
-            height=20,
+            size_hint=(1, 0.05),                            # Tamaño relativo
             text_size=(None, None),
-            halign = "center",
+            halign="center",
             valign="middle",
-        )                                                   # Crear una etiqueta con la cantidad de registros
+        )
         layout.add_widget(cantidad)                         # Agregar la etiqueta al layout
+
         boton_volver = Button(
             text="Volver al menú",
-            size_hint=(1, None),
-            height=50,
+            size_hint=(1, 0.1),                             # Tamaño relativo
             background_color=(0.9, 0.4, 0.4, 1),
-        )                                                   # Crear un botón para volver al menú principal
+        )
         boton_volver.bind(on_press=self.on_button_press)    # Vincular el evento de presionar el botón
         layout.add_widget(boton_volver)                     # Agregar el botón al layout
+
         return layout                                       # Retornar el layout
-    
+
     def on_button_press(self, instance):
         # Obtener el nombre del botón presionado
         self.valor = instance.text

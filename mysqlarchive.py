@@ -333,7 +333,7 @@ def ver_autores(conexion):
         autores[i] = (autores[i][0], autores[i][2], autores[i][1])
     Lista = menuApp2(
         title = "Listado de autores",
-        tamañoVentana = (300, 900),
+        tamañoVentana = (800, 900),
         lista=autores,
         arquetipos = ","    
 
@@ -349,7 +349,7 @@ def ver_generos(conexion):
     generos.sort(key=lambda x: x[1])
     Lista = menuApp2(
         title = "Listado de géneros",
-        tamañoVentana = (300, 900),
+        tamañoVentana = (800, 900),
         lista=generos
 
     )
@@ -363,7 +363,7 @@ def ver_editoriales(conexion):
     editoriales.sort(key=lambda x: x[1])
     Lista = menuApp2(
         title = "Listado de editoriales",
-        tamañoVentana = (300, 900),
+        tamañoVentana = (800, 900),
         lista=editoriales
     )
     Lista.run()    
